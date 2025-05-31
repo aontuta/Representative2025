@@ -1,11 +1,453 @@
 <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบข้อมูลผู้แทนสมาชิก</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      h2 {text-align: center;}
+      h3 {text-align: center;}
+      img {text-align: center;}
+      img {
+  display: block;
+  margin: auto;
+  
+}
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Light blue background */
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* Blue-600 */
+        }
+        .btn-secondary {
+            background-color: #60a5fa; /* Blue-400 */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #3b82f6; /* Blue-500 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .table th, .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb; /* Gray-200 */
+        }
+        .table th {
+            background-color: #eff6ff; /* Blue-50 */
+            color: #1e3a8a; /* Blue-800 */
+        }
+        /* SweetAlert custom styling for blue theme */
+        .swal2-popup {
+            border-radius: 0.5rem !important;
+        }
+        .swal2-confirm {
+            background-color: #3b82f6 !important; /* Blue-500 */
+        }
+        .swal2-title {
+            color: #1e3a8a !important; /* Blue-800 */
+        }
+        #loadingSpinner {
+            border-top-color: #3b82f6;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 40; /* Below modal */
+        }
+        .modal {
+            z-index: 50; /* Above backdrop */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="container mx-auto max-w-2xl">
+        <div class="card p-6 md:p-8 ">
+          <img  src="https://drive.google.com/thumbnail?id=10b6_OZl2cJMOJ6qbkzHsMtpNTblWtqfU" alt="DOA"/> <br>
+            <header class="text-center mb-6"> 
+              
+                <h1 class="text-3xl font-bold text-blue-700">ระบบข้อมูลผู้แทนสมาชิก</h1><br>
+            </header>
 
-<html>
-   <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-      <base target="_top">
-   </head>
-   <body>
-      <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://script.google.com/macros/s/AKfycbzwEHd92Q_wvM27o_vyHsYqs13zl-aDgvJStYwfMCgS0lZVImkAgQfXgBe_Xg7gvSAC2g/exec"></iframe>
-   </body>
+            <section id="searchSection" class="space-y-4">
+                 <div>
+                    <input type="text" id="userInput" name="userInput" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="8" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="กรอกเลขสมาชิก 8 หลัก">
+                </div>
+                <div>
+                    <input type="text" id="passInput" name="passInput" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="13" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="กรอกหมายเลขบัตรประชาชน 13 หลัก">
+                </div>
+                <button id="searchButton" class="w-full btn-primary font-semibold py-2 px-4 rounded-md shadow-sm flex items-center justify-center">
+                    <svg id="searchIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="searchButtonText">ค้นหาข้อมูล</span>
+                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </section>
+
+            <section id="resultsSection" class="mt-8 hidden">
+                <h2 class="text-xl font-semibold text-blue-600 mb-4">ข้อมูลผู้แทนสมาชิก</h2>
+                <div class="overflow-x-auto">
+                    <table id="resultsTable" class="min-w-full table">
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+                <div id="externalLinkContainer" class="mt-4">
+                    </div>
+                <button id="openModalButton" class="mt-4 w-full btn-secondary font-semibold py-2 px-4 rounded-md shadow-sm">แจ้งโอนย้ายกลุ่มสมาชิก</button>
+                <button id="resetSearchButton" class="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-md shadow-sm hidden">กลับหน้าหลัก</button>
+            </section>
+        </div>
+    </div>
+
+    <div id="uploadModalBackdrop" class="modal-backdrop hidden"></div>
+    <div id="uploadModal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="card w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 md:p-8 ">
+            <div class="flex justify-between items-center mb-4 ">
+              <h2 class="text-xl font-semibold text-blue-700">ฟอร์มแจ้งย้ายกลุ่มสมาชิก</h2>
+                <button id="closeModalButton" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="modalUserInfo" class="mb-4 p-3 bg-blue-50 rounded-md">
+                <h3 class="text-md font-semibold text-blue-600 mb-2">ผู้แทนสมาชิก</h3>
+                <table class="min-w-full text-sm">
+                    <tbody id="modalUserInfoTable">
+                        </tbody>
+                </table>
+            </div>
+
+            <div>
+                <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-1">เลือกไฟล์:</label>
+                <input type="file" id="fileInput" name="fileInput" accept="image/*,.pdf" class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100">
+            </div>
+            <div id="imagePreviewContainer" class="mt-4 text-center">
+                <img id="imagePreview" src="#" alt="ตัวอย่างรูปภาพ" class="max-w-xs max-h-48 mx-auto rounded-md hidden object-contain"/>
+                <p id="fileNamePreview" class="text-sm text-gray-600 mt-2"></p>
+            </div>
+
+            <button id="uploadButton" class="mt-6 w-full btn-primary font-semibold py-2 px-4 rounded-md shadow-sm flex items-center justify-center">
+                <svg id="uploadIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span id="uploadButtonText">แจ้งโอนย้ายกลุ่มสมาชิก</span>
+                <svg id="uploadLoadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Store current user data globally after successful search for modal usage
+        let currentFoundUserData = null;
+        let currentUserInputId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchSection = document.getElementById('searchSection'); // Get search section element
+            const userInput = document.getElementById('userInput');
+            const passInput = document.getElementById('passInput');
+            const searchButton = document.getElementById('searchButton');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsTableBody = document.getElementById('resultsTable').querySelector('tbody');
+            const externalLinkContainer = document.getElementById('externalLinkContainer');
+            const resetSearchButton = document.getElementById('resetSearchButton'); // Get reset search button
+            
+            const openModalButton = document.getElementById('openModalButton');
+            const uploadModal = document.getElementById('uploadModal');
+            const uploadModalBackdrop = document.getElementById('uploadModalBackdrop');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const modalUserInfoTableBody = document.getElementById('modalUserInfoTable');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const fileNamePreview = document.getElementById('fileNamePreview');
+            // const imagePreviewContainer = document.getElementById('imagePreviewContainer'); // Already declared, but ensure it's used if needed elsewhere.
+            const uploadButton = document.getElementById('uploadButton');
+
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const searchIcon = document.getElementById('searchIcon');
+            const searchButtonText = document.getElementById('searchButtonText');
+
+            const uploadLoadingSpinner = document.getElementById('uploadLoadingSpinner');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const uploadButtonText = document.getElementById('uploadButtonText');
+
+            function toggleSearchLoading(isLoading) {
+                if (isLoading) {
+                    searchButtonText.classList.add('hidden');
+                    searchIcon.classList.add('hidden');
+                    loadingSpinner.classList.remove('hidden');
+                    searchButton.disabled = true;
+                } else {
+                    searchButtonText.classList.remove('hidden');
+                    searchIcon.classList.remove('hidden');
+                    loadingSpinner.classList.add('hidden');
+                    searchButton.disabled = false;
+                }
+            }
+
+            function toggleUploadLoading(isLoading) {
+                if (isLoading) {
+                    uploadButtonText.classList.add('hidden');
+                    uploadIcon.classList.add('hidden');
+                    uploadLoadingSpinner.classList.remove('hidden');
+                    uploadButton.disabled = true;
+                } else {
+                    uploadButtonText.classList.remove('hidden');
+                    uploadIcon.classList.remove('hidden');
+                    uploadLoadingSpinner.classList.add('hidden');
+                    uploadButton.disabled = false;
+                }
+            }
+
+            searchButton.addEventListener('click', () => {
+                const userVal = userInput.value.trim();
+                const passVal = passInput.value.trim();
+
+                if (!userVal||userVal.length !== 8) {
+                      Swal.fire('กรุณาใส่เลขสมาชิก', 'กรุณาใส่เลขสมาชิกจำนวน 8 หลัก <br>เช่น เลขสมาชิก 13788 ให้พิมพ์ 00013788', 'error');
+                    return;
+                }
+                if (!passVal||passVal.length !== 13) {
+                    Swal.fire({ icon: 'error', title: 'กรุณาใส่เลขบัตรประชาชน', text: 'กรุณาใส่เลขบัตรประชาชน 13 หลัก' });
+                    return;
+                }
+
+                toggleSearchLoading(true);
+                // resultsSection.classList.add('hidden'); // Hide previous results - This is good.
+
+                google.script.run
+                    .withSuccessHandler(response => {
+                        toggleSearchLoading(false);
+                        searchSection.classList.add('hidden'); // Hide search section after search
+                        resetSearchButton.classList.remove('hidden'); // Show reset search button
+
+                        if (response.status === 'success') {
+                            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'พบข้อมูลของท่าน' });
+                            currentFoundUserData = response.data;
+                            currentUserInputId = userVal; 
+                            displayResults(response.data);
+                            resultsSection.classList.remove('hidden');
+                        } else if (response.status === 'not_found') {
+                            Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: 'ไม่พบข้อมูลของท่าน กรุณาติดต่อสหกรณ์ 02-9405088' });
+                            currentFoundUserData = null;
+                            currentUserInputId = null;
+                            resultsSection.classList.add('hidden'); // Ensure results are hidden if not found
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: response.message || 'ไม่สามารถค้นหาข้อมูลได้' });
+                            currentFoundUserData = null;
+                            currentUserInputId = null;
+                            resultsSection.classList.add('hidden'); // Ensure results are hidden on error
+                        }
+                    })
+                    .withFailureHandler(error => {
+                        toggleSearchLoading(false);
+                        searchSection.classList.add('hidden'); // Hide search section even on failure
+                        resetSearchButton.classList.remove('hidden'); // Show reset search button
+
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'การเชื่อมต่อล้มเหลว: ' + error.message });
+                        currentFoundUserData = null;
+                        currentUserInputId = null;
+                        resultsSection.classList.add('hidden'); // Ensure results are hidden on failure
+                    })
+                    .searchData({ user: userVal, pass: passVal });
+            });
+
+            function displayResults(data) {
+                resultsTableBody.innerHTML = ''; 
+                externalLinkContainer.innerHTML = ''; 
+
+                const fields = [
+                    { label: 'ชื่อ - นามสกุล', value: data.name },
+                    { label: 'กลุ่มสมาชิก', value: data.affiliation },
+                    { label: 'หมายเลขโทรศัพท์', value: data.phone },
+                    { label: 'จำนวนสมาชิก', value: data.memberCount }
+                ];
+
+                fields.forEach(field => {
+                    const row = resultsTableBody.insertRow();
+                    const cellLabel = row.insertCell();
+                    const cellValue = row.insertCell();
+                    cellLabel.className = 'font-semibold text-gray-600 pr-2 py-2';
+                    cellValue.className = 'py-2';
+                    cellLabel.textContent = field.label + ':';
+                    cellValue.textContent = field.value || 'N/A';
+                });
+
+                if (data.externalLink && data.externalLinkText) {
+                    const linkButton = document.createElement('a');
+                    linkButton.href = data.externalLink;
+                    linkButton.target = '_blank'; 
+                    linkButton.textContent = data.externalLinkText;
+                    linkButton.className = 'w-full block text-center btn-primary font-semibold py-2 px-4 rounded-md shadow-sm';
+                    externalLinkContainer.appendChild(linkButton);
+                }
+            }
+            
+            openModalButton.addEventListener('click', () => {
+                if (!currentFoundUserData || !currentUserInputId) {
+                    Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลสมาชิกปัจจุบันเพื่อดำเนินการต่อ', 'error');
+                    return;
+                }
+                modalUserInfoTableBody.innerHTML = `
+                    <tr><td class="font-semibold pr-2 py-1">ชื่อ - นามสกุล:</td><td class="py-1">${currentFoundUserData.name || 'N/A'}</td></tr>
+                    <tr><td class="font-semibold pr-2 py-1">เลขสมาชิก:</td><td class="py-1">${currentUserInputId}</td></tr>
+                    <tr><td class="font-semibold pr-2 py-1">กลุ่มสมาชิก:</td><td class="py-1">${currentFoundUserData.affiliation || 'N/A'}</td></tr>
+                `;
+                uploadModal.classList.remove('hidden');
+                uploadModalBackdrop.classList.remove('hidden');
+                fileInput.value = ''; 
+                imagePreview.classList.add('hidden');
+                imagePreview.src = '#';
+                fileNamePreview.textContent = '';
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                uploadModal.classList.add('hidden');
+                uploadModalBackdrop.classList.add('hidden');
+            });
+            uploadModalBackdrop.addEventListener('click', () => { 
+                uploadModal.classList.add('hidden');
+                uploadModalBackdrop.classList.add('hidden');
+            });
+
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    fileNamePreview.textContent = `ไฟล์ที่เลือก: ${file.name}`;
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            imagePreview.src = e.target.result;
+                            imagePreview.classList.remove('hidden');
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        imagePreview.classList.add('hidden');
+                        imagePreview.src = '#'; 
+                    }
+                } else {
+                    imagePreview.classList.add('hidden');
+                    imagePreview.src = '#';
+                    fileNamePreview.textContent = '';
+                }
+            });
+
+            uploadButton.addEventListener('click', () => {
+                const file = fileInput.files[0];
+                if (!file) {
+                    Swal.fire({ icon: 'warning', title: 'ไม่ได้เลือกไฟล์', text: 'กรุณาเลือกไฟล์ที่ต้องการอัปโหลด' });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'ยืนยันการแจ้งข้อมูล<br>โอนย้ายกลุ่มสมาชิก',
+                    //text: `คุณต้องการอัปโหลดไฟล์ "${file.name}" ใช่หรือไม่?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'ยืนยัน',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        toggleUploadLoading(true);
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const fileData = {
+                                fileName: file.name,
+                                mimeType: file.type,
+                                base64Data: e.target.result.split(',')[1] 
+                            };
+                            const recordData = {
+                                user: currentUserInputId,
+                                name: currentFoundUserData.name,
+                                affiliation: currentFoundUserData.affiliation,
+                                phone: currentFoundUserData.phone
+                            };
+
+                            google.script.run
+                                .withSuccessHandler(response => {
+                                    toggleUploadLoading(false);
+                                    if (response.status === 'success') {
+                                        Swal.fire({ icon: 'success', title: 'สหกรณ์ได้รับแจ้ง<br>การโอนย้ายกลุ่มสมาชิก<br>เรียบร้อยแล้ว', text: `` });
+                                        // Do not call resetFullForm() here if we want to keep the results visible
+                                        // Instead, just close the modal and clear file input
+                                        uploadModal.classList.add('hidden');
+                                        uploadModalBackdrop.classList.add('hidden');
+                                        fileInput.value = '';
+                                        imagePreview.classList.add('hidden');
+                                        imagePreview.src = '#';
+                                        fileNamePreview.textContent = '';
+                                        resetFullForm();
+                                    } else {
+                                        Swal.fire({ icon: 'error', title: 'อัปโหลดล้มเหลว', text: response.message || 'ไม่สามารถบันทึกไฟล์ได้' });
+                                    }
+                                })
+                                .withFailureHandler(error => {
+                                    toggleUploadLoading(false);
+                                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'การเชื่อมต่อล้มเหลว: ' + error.message });
+                                })
+                                .uploadFileAndSaveData({ fileData: fileData, recordData: recordData });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+            
+            resetSearchButton.addEventListener('click', () => {
+                resetFullForm();
+            });
+
+            function resetFullForm() {
+                userInput.value = '';
+                passInput.value = '';
+                resultsSection.classList.add('hidden');
+                resultsTableBody.innerHTML = '';
+                externalLinkContainer.innerHTML = '';
+                
+                searchSection.classList.remove('hidden'); // Show search section again
+                resetSearchButton.classList.add('hidden'); // Hide reset search button
+
+                uploadModal.classList.add('hidden');
+                uploadModalBackdrop.classList.add('hidden');
+                fileInput.value = '';
+                imagePreview.classList.add('hidden');
+                imagePreview.src = '#';
+                fileNamePreview.textContent = '';
+
+                currentFoundUserData = null;
+                currentUserInputId = null;
+            }
+        });
+    </script>
+</body>
 </html>
